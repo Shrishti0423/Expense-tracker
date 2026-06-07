@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import ExpenseForm from './components/ExpenseForm';
 import ExpenseList from './components/ExpenseList';
 import Summary from './components/Summary';
-import { fetchExpenses, createExpense, updateExpense, deleteExpense } from './services/api';
+import { fetchExpenses, createExpense, updateExpense, deleteExpense, API_BASE_URL } from './services/api';
 import { DEFAULT_BUDGETS, EXPENSE_CATEGORIES } from './constants';
 import './App.css';
 
@@ -11,6 +11,7 @@ function App() {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [exportNotice, setExportNotice] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editingExpense, setEditingExpense] = useState(null);
 
@@ -50,7 +51,7 @@ function App() {
       const response = await fetchExpenses();
       setExpenses(response.data || []);
     } catch (err) {
-      setError('Could not establish connection to the backend API. Please make sure the server is running on port 5000.');
+      setError(`Could not connect to the backend API at ${API_BASE_URL}. Please ensure the server is running and VITE_API_URL is configured correctly.`);
       console.error(err);
     } finally {
       setLoading(false);
@@ -206,9 +207,10 @@ function App() {
   // Export filtered expenses to CSV file
   const handleExportCSV = () => {
     if (filteredExpenses.length === 0) {
-      alert('No expenses available to export.');
+      setExportNotice('No expenses available to export for the current filters.');
       return;
     }
+    setExportNotice(null);
 
     const headers = ['Date', 'Category', 'Amount (INR)', 'Note'];
     const rows = filteredExpenses.map((exp) => [
@@ -235,11 +237,20 @@ function App() {
     URL.revokeObjectURL(url);
   };
 
+  const hasActiveFilters =
+    filters.category !== 'All' ||
+    filters.dateRange !== 'this-month' ||
+    filters.searchQuery !== '' ||
+    filters.startDate !== '' ||
+    filters.endDate !== '';
+
+  const appName = import.meta.env.VITE_APP_NAME || 'Expense Tracker';
+
   return (
-    <div className="min-h-screen bg-[#070b13] text-[#f3f4f6] pb-16 font-sans">
+    <div className="min-h-screen bg-[#070b13] text-[#f3f4f6] pb-16 font-sans overflow-x-hidden">
       
       {/* Navbar */}
-      <header className="sticky top-0 z-50 bg-[#090f19]/85 backdrop-blur-md border-b border-slate-900/60 shadow-lg px-6 py-4">
+      <header className="sticky top-0 z-50 bg-[#090f19]/85 backdrop-blur-md border-b border-slate-900/60 shadow-lg px-4 sm:px-6 py-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
           {/* Logo Brand */}
           <div className="flex items-center gap-3">
@@ -249,8 +260,8 @@ function App() {
               </svg>
             </div>
             <div>
-              <h1 className="text-xl font-black bg-gradient-to-r from-white via-slate-100 to-indigo-400 bg-clip-text text-transparent">
-                Expense Tracker
+              <h1 className="text-lg sm:text-xl font-black bg-gradient-to-r from-white via-slate-100 to-indigo-400 bg-clip-text text-transparent">
+                {appName}
               </h1>
               <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-widest mt-0.5">
                 Track your spending
@@ -259,7 +270,7 @@ function App() {
           </div>
 
           {/* Nav Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3 w-full sm:w-auto">
             <button
               onClick={handleExportCSV}
               disabled={filteredExpenses.length === 0}
@@ -287,11 +298,15 @@ function App() {
       </header>
 
       {/* Main Content Workspace */}
-      <main className="max-w-7xl mx-auto px-6 mt-8 space-y-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 mt-6 sm:mt-8 space-y-6 sm:space-y-8">
         
         {/* Error Alert Display */}
         {error && (
-          <div className="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-300 rounded-2xl flex items-start gap-3 relative animate-pulse">
+          <div
+            role="alert"
+            aria-live="assertive"
+            className="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-300 rounded-2xl flex items-start gap-3 relative"
+          >
             <svg className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
@@ -308,6 +323,20 @@ function App() {
           </div>
         )}
 
+        {exportNotice && (
+          <div role="status" aria-live="polite" className="p-3 bg-amber-500/10 border border-amber-500/20 text-amber-200 rounded-xl text-sm flex justify-between items-center gap-3">
+            <span>{exportNotice}</span>
+            <button
+              type="button"
+              onClick={() => setExportNotice(null)}
+              aria-label="Dismiss export notice"
+              className="text-amber-400 hover:text-white font-bold shrink-0"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* Filter Toolbar Panel */}
         <section className="bg-slate-900/40 border border-slate-800/80 p-5 rounded-2xl shadow-xl space-y-4">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -317,8 +346,9 @@ function App() {
               </svg>
               Filter Transactions
             </h3>
-            {Object.values(filters).some(x => x !== 'All' && x !== 'all' && x !== '') && (
+            {hasActiveFilters && (
               <button
+                type="button"
                 onClick={resetFilters}
                 className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold transition flex items-center gap-1"
               >
@@ -330,24 +360,28 @@ function App() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
             {/* Search Bar Input */}
             <div className="relative">
-              <svg className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <label htmlFor="filter-search" className="sr-only">Search expenses</label>
+              <svg className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
-                type="text"
+                id="filter-search"
+                type="search"
                 placeholder="Search note/amount..."
                 value={filters.searchQuery}
                 onChange={(e) => handleFilterChange('searchQuery', e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-[#090f19] border border-slate-800 rounded-xl focus:outline-none focus:border-indigo-500 text-xs text-white placeholder-slate-600 transition-all"
+                className="w-full min-w-0 pl-10 pr-4 py-2 bg-[#090f19] border border-slate-800 rounded-xl focus:outline-none focus:border-indigo-500 text-xs text-white placeholder-slate-600 transition-all"
               />
             </div>
 
             {/* Category Dropdown Filter */}
             <div>
+              <label htmlFor="filter-category" className="sr-only">Filter by category</label>
               <select
+                id="filter-category"
                 value={filters.category}
                 onChange={(e) => handleFilterChange('category', e.target.value)}
-                className="w-full px-4 py-2 bg-[#090f19] border border-slate-800 rounded-xl focus:outline-none focus:border-indigo-500 text-xs text-white transition-all"
+                className="w-full min-w-0 px-4 py-2 bg-[#090f19] border border-slate-800 rounded-xl focus:outline-none focus:border-indigo-500 text-xs text-white transition-all"
               >
                 <option value="All">All Categories</option>
                 {EXPENSE_CATEGORIES.map((cat) => (
@@ -358,10 +392,12 @@ function App() {
 
             {/* Date Range Selector Dropdown */}
             <div>
+              <label htmlFor="filter-date-range" className="sr-only">Filter by date range</label>
               <select
+                id="filter-date-range"
                 value={filters.dateRange}
                 onChange={(e) => handleFilterChange('dateRange', e.target.value)}
-                className="w-full px-4 py-2 bg-[#090f19] border border-slate-800 rounded-xl focus:outline-none focus:border-indigo-500 text-xs text-white transition-all"
+                className="w-full min-w-0 px-4 py-2 bg-[#090f19] border border-slate-800 rounded-xl focus:outline-none focus:border-indigo-500 text-xs text-white transition-all"
               >
                 <option value="all">All Time</option>
                 <option value="this-month">This Month</option>
@@ -372,26 +408,32 @@ function App() {
             </div>
 
             {/* Custom Range: Start Date */}
-            <div className={`${filters.dateRange === 'custom' ? 'block' : 'hidden md:block opacity-30 pointer-events-none'}`}>
-              <input
-                type="date"
-                value={filters.startDate}
-                onChange={(e) => handleFilterChange('startDate', e.target.value)}
-                disabled={filters.dateRange !== 'custom'}
-                className="w-full px-4 py-2 bg-[#090f19] border border-slate-800 rounded-xl focus:outline-none focus:border-indigo-500 text-xs text-white transition-all"
-              />
-            </div>
+            {filters.dateRange === 'custom' && (
+              <div>
+                <label htmlFor="filter-start-date" className="sr-only">Start date</label>
+                <input
+                  id="filter-start-date"
+                  type="date"
+                  value={filters.startDate}
+                  onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                  className="w-full min-w-0 px-4 py-2 bg-[#090f19] border border-slate-800 rounded-xl focus:outline-none focus:border-indigo-500 text-xs text-white transition-all"
+                />
+              </div>
+            )}
 
             {/* Custom Range: End Date */}
-            <div className={`${filters.dateRange === 'custom' ? 'block' : 'hidden md:block opacity-30 pointer-events-none'}`}>
-              <input
-                type="date"
-                value={filters.endDate}
-                onChange={(e) => handleFilterChange('endDate', e.target.value)}
-                disabled={filters.dateRange !== 'custom'}
-                className="w-full px-4 py-2 bg-[#090f19] border border-slate-800 rounded-xl focus:outline-none focus:border-indigo-500 text-xs text-white transition-all"
-              />
-            </div>
+            {filters.dateRange === 'custom' && (
+              <div>
+                <label htmlFor="filter-end-date" className="sr-only">End date</label>
+                <input
+                  id="filter-end-date"
+                  type="date"
+                  value={filters.endDate}
+                  onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                  className="w-full min-w-0 px-4 py-2 bg-[#090f19] border border-slate-800 rounded-xl focus:outline-none focus:border-indigo-500 text-xs text-white transition-all"
+                />
+              </div>
+            )}
           </div>
         </section>
 
@@ -414,7 +456,7 @@ function App() {
               {editingId && (
                 <button
                   onClick={handleCancelEdit}
-                  className="w-full bg-slate-800 hover:bg-slate-750 text-slate-300 font-semibold py-2.5 px-4 rounded-xl text-xs transition duration-200 border border-slate-700/20 shadow-md flex items-center justify-center gap-1.5"
+                  className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 px-4 rounded-xl text-xs transition duration-200 border border-slate-700/20 shadow-md flex items-center justify-center gap-1.5"
                 >
                   Cancel Editing
                 </button>
@@ -436,19 +478,21 @@ function App() {
                 Configure monthly targets per category. Budgets are autosaved to localStorage.
               </p>
 
-              <div className="grid grid-cols-2 gap-3.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 {Object.keys(budgets).map((cat) => (
-                  <div key={cat} className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{cat}</label>
+                  <div key={cat} className="space-y-1 min-w-0">
+                    <label htmlFor={`budget-${cat}`} className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{cat}</label>
                     <div className="relative">
-                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-600 text-xs">₹</span>
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-600 text-xs" aria-hidden="true">₹</span>
                       <input
+                        id={`budget-${cat}`}
                         type="number"
                         value={budgets[cat]}
                         onChange={(e) => handleBudgetChange(cat, e.target.value)}
-                        className="w-full pl-6 pr-2 py-1.5 bg-[#090f19]/80 border border-slate-800 rounded-lg focus:outline-none focus:border-indigo-500 text-xs text-white placeholder-slate-700 transition-all font-semibold"
+                        className="w-full min-w-0 pl-6 pr-2 py-1.5 bg-[#090f19]/80 border border-slate-800 rounded-lg focus:outline-none focus:border-indigo-500 text-xs text-white placeholder-slate-700 transition-all font-semibold"
                         min="0"
                         placeholder="Limit"
+                        aria-label={`${cat} budget limit`}
                       />
                     </div>
                   </div>

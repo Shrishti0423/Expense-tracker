@@ -7,7 +7,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   PieChart,
   Pie,
@@ -97,7 +96,7 @@ const Summary = ({ expenses = [], budgets = {}, dateRange = 'this-month' }) => {
           <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl group-hover:bg-rose-500/20 transition-all duration-300" />
           <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Highest Expense</h3>
           <p className="text-2xl font-black text-white">
-            {stats.highest ? formatCurrency(stats.highest.amount) : '₹0.00'}
+            {stats.highest ? formatCurrency(stats.highest.amount) : formatCurrency(0)}
           </p>
           {stats.highest && (
             <div className="mt-1 flex items-center gap-1.5">
@@ -115,7 +114,7 @@ const Summary = ({ expenses = [], budgets = {}, dateRange = 'this-month' }) => {
         <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 p-5 rounded-2xl relative overflow-hidden group col-span-1 md:col-span-2">
           <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all duration-300" />
           <div className="flex justify-between items-start mb-2">
-            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Overall Monthly Budget</h3>
+            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Overall Budget ({periodLabel})</h3>
             <span className={`text-xs font-bold ${getProgressTextColor(stats.budgetPercent)}`}>
               {stats.budgetPercent.toFixed(1)}% Used
             </span>
@@ -126,7 +125,14 @@ const Summary = ({ expenses = [], budgets = {}, dateRange = 'this-month' }) => {
           </div>
           
           {/* Progress Bar */}
-          <div className="w-full bg-slate-950 rounded-full h-2 mt-3 overflow-hidden border border-slate-800/50">
+          <div
+            className="w-full bg-slate-950 rounded-full h-2 mt-3 overflow-hidden border border-slate-800/50"
+            role="progressbar"
+            aria-valuenow={Math.min(stats.budgetPercent, 100)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`Overall budget usage: ${stats.budgetPercent.toFixed(1)} percent`}
+          >
             <div
               className={`h-full rounded-full transition-all duration-500 ${getProgressColor(stats.budgetPercent)}`}
               style={{ width: `${Math.min(stats.budgetPercent, 100)}%` }}
@@ -167,7 +173,14 @@ const Summary = ({ expenses = [], budgets = {}, dateRange = 'this-month' }) => {
                     </div>
 
                     {/* Category bar */}
-                    <div className="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800/50">
+                    <div
+                      className="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800/50"
+                      role="progressbar"
+                      aria-valuenow={Math.min(percent, 100)}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label={`${cat} budget: ${percent.toFixed(0)} percent used`}
+                    >
                       <div
                         className={`h-full rounded-full transition-all duration-500 ${getProgressColor(percent)}`}
                         style={{ width: `${Math.min(percent, 100)}%` }}
@@ -189,8 +202,8 @@ const Summary = ({ expenses = [], budgets = {}, dateRange = 'this-month' }) => {
             </div>
           </div>
           
-          <div className="mt-6 p-3 bg-slate-950/40 rounded-xl border border-slate-850/50 text-[11px] text-slate-400">
-            💡 Adjust your category limits in the <strong>Budget Settings</strong> panel on the left to fine-tune your spending threshold.
+          <div className="mt-6 p-3 bg-slate-950/40 rounded-xl border border-slate-800/50 text-[11px] text-slate-400">
+            Tip: Adjust your category limits in the <strong>Budget Settings</strong> panel to fine-tune your spending threshold.
           </div>
         </div>
 
@@ -200,12 +213,22 @@ const Summary = ({ expenses = [], budgets = {}, dateRange = 'this-month' }) => {
           {/* Bar Chart */}
           <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 p-5 rounded-2xl shadow-xl flex flex-col justify-between">
             <h4 className="text-sm font-bold text-white mb-3">Expenses by Category</h4>
-            <div className="w-full h-60">
+            <div className="w-full h-48 sm:h-60 min-w-0">
+              {stats.totalSpent > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats.byCategory.filter(d => d.amount > 0)}>
+                <BarChart data={stats.byCategory.filter(d => d.amount > 0)} margin={{ bottom: 20, left: 0, right: 4 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" opacity={0.3} />
-                  <XAxis dataKey="category" stroke="#64748b" fontSize={10} tickLine={false} />
-                  <YAxis stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} width={40} />
+                  <XAxis
+                    dataKey="category"
+                    stroke="#64748b"
+                    fontSize={9}
+                    tickLine={false}
+                    angle={-35}
+                    textAnchor="end"
+                    height={50}
+                    interval={0}
+                  />
+                  <YAxis stroke="#64748b" fontSize={9} tickLine={false} axisLine={false} width={36} />
                   <Tooltip
                     cursor={{ fill: 'rgba(255, 255, 255, 0.03)' }}
                     contentStyle={{
@@ -227,13 +250,16 @@ const Summary = ({ expenses = [], budgets = {}, dateRange = 'this-month' }) => {
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
+              ) : (
+                <p className="text-xs text-slate-500 italic flex items-center justify-center h-full">No chart data for current filters</p>
+              )}
             </div>
           </div>
 
           {/* Pie Chart */}
-          <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 p-5 rounded-2xl shadow-xl flex flex-col justify-between">
+          <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 p-5 rounded-2xl shadow-xl flex flex-col justify-between min-w-0">
             <h4 className="text-sm font-bold text-white mb-3">Distribution Share</h4>
-            <div className="w-full h-60 relative flex items-center justify-center">
+            <div className="w-full h-48 sm:h-60 relative flex items-center justify-center min-w-0">
               {stats.totalSpent > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>

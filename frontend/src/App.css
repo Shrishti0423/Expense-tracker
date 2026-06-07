@@ -1,6 +1,10 @@
-/* App styles */
-* {
-  transition: all 0.3s ease;
+/* Scoped transitions — avoid global * selector for mobile performance */
+button,
+a,
+input,
+select,
+textarea {
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
 }
 
 button:disabled {
@@ -8,20 +12,34 @@ button:disabled {
   opacity: 0.6;
 }
 
-/* Scrollbar styling */
+/* Dark-theme scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #0f172a;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #888;
+  background: #334155;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: #475569;
+}
+
+/* Screen-reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

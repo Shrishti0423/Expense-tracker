@@ -1,33 +1,31 @@
 import axios from 'axios';
 
-// Get API URL from environment variables
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const isDev = import.meta.env.DEV;
 
-// Create Axios instance with default config
 const api = axios.create({
-  baseURL: `${API_URL}/api`,
+  baseURL: `${API_BASE_URL}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor (optional - for logging)
 api.interceptors.request.use(
   (config) => {
-    console.log('📤 API Request:', config.method.toUpperCase(), config.url);
+    if (isDev) {
+      console.log('API Request:', config.method.toUpperCase(), config.url);
+    }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Response interceptor (optional - for error handling)
 api.interceptors.response.use(
-  (response) => {
-    console.log('📥 API Response:', response.status, response.data);
-    return response.data; // Return just the data
-  },
+  (response) => response.data,
   (error) => {
-    console.error('❌ API Error:', error.response?.data || error.message);
+    if (isDev) {
+      console.error('API Error:', error.response?.data || error.message);
+    }
     return Promise.reject(error);
   }
 );

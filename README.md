@@ -8,16 +8,83 @@ Expense Tracker is a personal expense tracking web application that lets users r
 
 ---
 
-## Live Demo Links
+## Live Demo
 
 | Service | URL | Status |
 |---------|-----|--------|
-| **Frontend (Vercel)** | https://expense-tracker-frontend.vercel.app | Deployed |
-| **Backend API (Render)** | https://expense-tracker-api.onrender.com | Deploy after following [Deployment](#deployment) below |
+| **Frontend (Vercel)** | _Add your Vercel URL here_ | Pending |
+| **Backend API (Render)** | _Add your Render URL here_ | Pending |
 
-**Health check:** `GET https://expense-tracker-api.onrender.com/api/health`
+**Health check:** `GET <your-render-url>/api/health`
 
-> **Note:** The frontend only works end-to-end once the backend is deployed on Render and `VITE_API_URL` is set in Vercel. Test in an incognito window after deploying both services.
+> Replace the placeholder URLs above after deployment. Test the live app in an **incognito window** to confirm frontend ↔ backend communication.
+
+**Example after deploy:**
+- Frontend: `https://expense-tracker.vercel.app`
+- Backend: `https://expense-tracker-api.onrender.com`
+- Health: `https://expense-tracker-api.onrender.com/api/health`
+
+---
+
+## Screenshots
+
+_Add screenshots here after deployment or local testing._
+
+| View | Screenshot |
+|------|------------|
+| Dashboard (desktop) | `screenshots/desktop-dashboard.png` |
+| Expense form | `screenshots/expense-form.png` |
+| Charts & summary | `screenshots/charts-summary.png` |
+| Mobile (375px) | `screenshots/mobile-view.png` |
+
+> Tip: Use browser DevTools → Toggle device toolbar to capture mobile screenshots at 320px, 375px, and 425px.
+
+---
+
+## Mobile Responsiveness
+
+The UI is built mobile-first with Tailwind CSS breakpoints (`sm` 640px, `md` 768px, `lg` 1024px):
+
+| Breakpoint | Layout behaviour |
+|------------|------------------|
+| **320–425px (mobile)** | Single-column layout; stacked navbar; grid card view; horizontally scrollable table with swipe hint; charts stack vertically |
+| **768px (tablet)** | Two-column expense grid; filter toolbar inline; charts side-by-side |
+| **1024px+ (desktop)** | Three-column dashboard: form + budgets left, transactions right; full filter grid |
+
+**Responsive features:**
+- `min-w-0` and `overflow-x-hidden` prevent horizontal page scroll
+- Tables use `overflow-x-auto` with `min-width` — no layout breaking on small screens
+- Charts use `ResponsiveContainer` with angled X-axis labels on mobile
+- Forms and inputs use full width with `min-w-0` to stay within viewport
+- Budget inputs stack to one column on very small screens
+
+---
+
+## Assessment Checklist
+
+### Must Have
+| Feature | Status |
+|---------|--------|
+| Add expense | Done |
+| Edit expense | Done |
+| Delete expense | Done |
+| Category filter | Done |
+| Date range filter (this month, last month, this year, custom, all) | Done |
+| Summary panel (total, per-category, highest expense) | Done |
+
+### Should Have
+| Feature | Status |
+|---------|--------|
+| Chart visualization (bar + pie) | Done |
+| INR currency formatting | Done |
+| Form validation (positive amount, no future dates) | Done |
+
+### Nice to Have (Bonus)
+| Feature | Status |
+|---------|--------|
+| CSV export (filtered data) | Done |
+| Budget indicators with progress bars | Done |
+| JSON file persistence (backend) | Done |
 
 ---
 
@@ -272,26 +339,50 @@ FULLSTACK/
 ### Backend — Render
 
 1. Go to [render.com](https://render.com) → **New** → **Blueprint** (or **Web Service**)
-2. Set **Root Directory** to `backend`
-3. **Build command:** `npm install`
-4. **Start command:** `npm start`
-5. Add environment variables:
-   - `NODE_ENV` = `production`
-   - `CLIENT_URL` = `https://expense-tracker-frontend.vercel.app`
-   - `PORT` = `10000` (Render sets this automatically; fallback is fine)
-6. Add a **persistent disk** mounted at `/opt/render/project/src/backend/data` (1 GB) so expenses survive redeploys
-7. Deploy and verify: `https://your-service.onrender.com/api/health`
+2. Connect your GitHub repo: `https://github.com/Shrishti0423/Expense-tracker`
+3. Settings:
 
-Or use the included `render.yaml` blueprint at the repo root.
+| Setting | Value |
+|---------|--------|
+| **Root Directory** | `backend` |
+| **Build Command** | `npm install` |
+| **Start Command** | `npm start` |
+| **Health Check Path** | `/api/health` |
+
+4. Environment variables:
+
+| Key | Value |
+|-----|--------|
+| `NODE_ENV` | `production` |
+| `CLIENT_URL` | Your Vercel frontend URL (e.g. `https://your-app.vercel.app`) |
+| `PORT` | `10000` (Render may override automatically) |
+
+5. Add a **persistent disk** mounted at `/opt/render/project/src/backend/data` (1 GB) so expenses survive redeploys
+6. Deploy and verify: `https://your-service.onrender.com/api/health`
+
+Or use the included [`render.yaml`](render.yaml) blueprint at the repo root.
 
 ### Frontend — Vercel
 
 1. Go to [vercel.com](https://vercel.com) → **Add New Project**
-2. Set **Root Directory** to `frontend`
-3. Add environment variable:
-   - `VITE_API_URL` = `https://expense-tracker-api.onrender.com` (your Render URL)
-4. Deploy and open the live URL in an incognito window
-5. Test add/edit/delete to confirm frontend ↔ backend communication
+2. Import repo and set **Root Directory** to `frontend`
+3. Framework preset: **Vite** (auto-detected via [`vercel.json`](frontend/vercel.json))
+4. Environment variable:
+
+| Key | Value |
+|-----|--------|
+| `VITE_API_URL` | Your Render backend URL (no `/api` suffix) |
+| `VITE_APP_NAME` | `Expense Tracker` (optional) |
+
+5. Deploy and open the live URL in an **incognito window**
+6. Test add / edit / delete to confirm frontend ↔ backend communication
+
+### Deployment order
+
+1. Deploy **backend** on Render first
+2. Deploy **frontend** on Vercel with `VITE_API_URL` pointing to Render
+3. Update Render `CLIENT_URL` with your Vercel URL
+4. Update README Live Demo section with both URLs
 
 ---
 
@@ -314,6 +405,13 @@ CLIENT_URL=http://localhost:5173
 
 For production, set `CLIENT_URL` to your Vercel URL. Multiple origins are supported (comma-separated).
 
+### Production notes
+
+- API URL is read from `VITE_API_URL` at build time — redeploy frontend after changing it
+- CORS is configured via `CLIENT_URL` on the backend
+- Console logging is disabled in production builds (dev-only in `api.js`)
+- No hardcoded production URLs in source — only `.env.example` defaults for local dev
+
 ---
 
 ## Next Steps
@@ -322,7 +420,6 @@ For production, set `CLIENT_URL` to your Vercel URL. Multiple origins are suppor
 - **SQLite/PostgreSQL** — JSON file was sufficient for the exercise scope and keeps setup simple
 - **User authentication** — out of scope; single-user local-first design
 - **Automated tests** — focused on delivering a complete working UI and API first
-- **GitHub repo setup** — deferred per current workflow
 
 **What I would build next:**
 - User accounts and multi-user expense tracking

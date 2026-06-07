@@ -13,7 +13,7 @@ const ExpenseCard = ({ expense, onEdit, onDelete, loading = false }) => {
   const meta = categoryMeta[expense.category] || categoryMeta.Other;
 
   return (
-    <div className={`bg-slate-900/60 backdrop-blur-md p-5 rounded-2xl border ${meta.border} hover:scale-[1.02] hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 flex flex-col justify-between h-full group`}>
+    <div className={`bg-slate-900/60 backdrop-blur-md p-4 sm:p-5 rounded-2xl border ${meta.border} sm:hover:scale-[1.01] hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 flex flex-col justify-between h-full group`}>
       <div>
         <div className="flex justify-between items-start mb-3">
           <div>
@@ -50,7 +50,7 @@ const ExpenseCard = ({ expense, onEdit, onDelete, loading = false }) => {
           onClick={() => onEdit(expense)}
           disabled={loading}
           aria-label={`Edit expense: ${expense.category}, ${formatCurrency(expense.amount)}`}
-          className="flex-1 bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white font-medium py-2 px-3 rounded-xl text-xs transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 border border-slate-700/30"
+          className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-medium py-2 px-3 rounded-xl text-xs transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 border border-slate-700/30"
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />

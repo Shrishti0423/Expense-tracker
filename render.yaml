@@ -1,4 +1,4 @@
-# Render Blueprint — deploy from dashboard: New > Blueprint > connect repo
+# Render Blueprint — deploy: New > Blueprint > connect GitHub repo
 # Or create a Web Service manually with root directory set to "backend"
 services:
   - type: web
@@ -12,7 +12,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: CLIENT_URL
-        value: https://expense-tracker-frontend.vercel.app
+        sync: false
       - key: PORT
         value: 10000
     disk:

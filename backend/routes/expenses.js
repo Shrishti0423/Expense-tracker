@@ -3,6 +3,20 @@ import { readExpenses, writeExpenses, generateId } from '../utils/fileOps.js';
 import { EXPENSE_CATEGORIES } from '../utils/constants.js';
 
 const router = express.Router();
+const isProduction = process.env.NODE_ENV === 'production';
+
+const sendServerError = (res, message, error) => {
+  res.status(500).json({
+    success: false,
+    message,
+    ...(isProduction ? {} : { error: error.message }),
+  });
+};
+
+const parseAmount = (value) => {
+  const parsed = parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : NaN;
+};
 
 /**
  * GET /api/expenses
@@ -13,7 +27,7 @@ router.get('/', async (req, res) => {
     const expenses = await readExpenses();
     
     // Sort by date (newest first)
-    const sorted = expenses.sort((a, b) => 
+    const sorted = [...expenses].sort((a, b) =>
       new Date(b.date) - new Date(a.date)
     );
     
@@ -23,11 +37,7 @@ router.get('/', async (req, res) => {
       data: sorted,
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch expenses',
-      error: error.message,
-    });
+    sendServerError(res, 'Failed to fetch expenses', error);
   }
 });
 
@@ -41,17 +51,18 @@ router.post('/', async (req, res) => {
     const { amount, category, date, note } = req.body;
     
     // Validation
-    if (!amount || !category || !date) {
+    if (amount === undefined || amount === null || amount === '' || !category || !date) {
       return res.status(400).json({
         success: false,
         message: 'Missing required fields: amount, category, date',
       });
     }
-    
-    if (amount <= 0) {
+
+    const parsedAmount = parseAmount(amount);
+    if (Number.isNaN(parsedAmount) || parsedAmount <= 0) {
       return res.status(400).json({
         success: false,
-        message: 'Amount must be positive',
+        message: 'Amount must be a positive number',
       });
     }
     
@@ -73,7 +84,7 @@ router.post('/', async (req, res) => {
     // Create new expense object
     const newExpense = {
       id: generateId(),
-      amount: parseFloat(amount),
+      amount: parsedAmount,
       category,
       date,
       note: note || '',
@@ -91,11 +102,7 @@ router.post('/', async (req, res) => {
       data: newExpense,
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to create expense',
-      error: error.message,
-    });
+    sendServerError(res, 'Failed to create expense', error);
   }
 });
 
@@ -109,11 +116,14 @@ router.put('/:id', async (req, res) => {
     const { amount, category, date, note } = req.body;
     
     // Validation (same as POST)
-    if (amount !== undefined && amount <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Amount must be positive',
-      });
+    if (amount !== undefined) {
+      const parsedAmount = parseAmount(amount);
+      if (Number.isNaN(parsedAmount) || parsedAmount <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Amount must be a positive number',
+        });
+      }
     }
     
     if (category && !EXPENSE_CATEGORIES.includes(category)) {
@@ -142,7 +152,7 @@ router.put('/:id', async (req, res) => {
     }
     
     // Update only provided fields
-    if (amount !== undefined) expenses[expenseIndex].amount = parseFloat(amount);
+    if (amount !== undefined) expenses[expenseIndex].amount = parseAmount(amount);
     if (category) expenses[expenseIndex].category = category;
     if (date) expenses[expenseIndex].date = date;
     if (note !== undefined) expenses[expenseIndex].note = note;
@@ -156,11 +166,7 @@ router.put('/:id', async (req, res) => {
       data: expenses[expenseIndex],
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to update expense',
-      error: error.message,
-    });
+    sendServerError(res, 'Failed to update expense', error);
   }
 });
 
@@ -190,11 +196,7 @@ router.delete('/:id', async (req, res) => {
       message: 'Expense deleted successfully',
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to delete expense',
-      error: error.message,
-    });
+    sendServerError(res, 'Failed to delete expense', error);
   }
 });
 
