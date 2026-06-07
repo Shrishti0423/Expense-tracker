@@ -12,17 +12,12 @@ Expense Tracker is a personal expense tracking web application that lets users r
 
 | Service | URL | Status |
 |---------|-----|--------|
-| **Frontend (Vercel)** | _Add your Vercel URL here_ | Pending |
-| **Backend API (Render)** | _Add your Render URL here_ | Pending |
+| **Frontend (Vercel)** | https://expense-tracker-rouge-eta-88.vercel.app | Deployed |
+| **Backend API (Render)** | https://expense-tracker-api.onrender.com | Deployed |
 
-**Health check:** `GET <your-render-url>/api/health`
+**Health check:** `GET https://expense-tracker-api.onrender.com/api/health`
 
-> Replace the placeholder URLs above after deployment. Test the live app in an **incognito window** to confirm frontend ↔ backend communication.
-
-**Example after deploy:**
-- Frontend: `https://expense-tracker.vercel.app`
-- Backend: `https://expense-tracker-api.onrender.com`
-- Health: `https://expense-tracker-api.onrender.com/api/health`
+> Test the live app in an **incognito window** to confirm frontend ↔ backend communication.
 
 ---
 
