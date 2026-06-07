@@ -1,10 +1,10 @@
-# SpendWise — Full Stack Expense Tracker
+# Expense Tracker — Full Stack Application
 
 ## Project Title & Brief Description
 
 **Exercise chosen:** Full Stack Expense Tracker
 
-SpendWise is a personal expense tracking web application that lets users record daily spending, filter transactions, and understand where their money goes. I built this as a monorepo with a React frontend and an Express REST API backend. Expenses are persisted to a JSON file on the server. The dashboard includes summary statistics, category budgets with visual progress indicators, bar/pie charts, and CSV export of filtered results.
+Expense Tracker is a personal expense tracking web application that lets users record daily spending, filter transactions, and understand where their money goes. I built this as a monorepo with a React frontend and an Express REST API backend. Expenses are persisted to a JSON file on the server. The dashboard includes summary statistics, category budgets with visual progress indicators, bar/pie charts, and CSV export of filtered results.
 
 ---
 
@@ -301,7 +301,7 @@ Or use the included `render.yaml` blueprint at the repo root.
 
 ```
 VITE_API_URL=http://localhost:5000
-VITE_APP_NAME=SpendWise Expense Tracker
+VITE_APP_NAME=Expense Tracker
 ```
 
 ### Backend (`backend/.env.local`)

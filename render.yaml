@@ -1,0 +1,21 @@
+# Render Blueprint — deploy from dashboard: New > Blueprint > connect repo
+# Or create a Web Service manually with root directory set to "backend"
+services:
+  - type: web
+    name: expense-tracker-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CLIENT_URL
+        value: https://expense-tracker-frontend.vercel.app
+      - key: PORT
+        value: 10000
+    disk:
+      name: expense-data
+      mountPath: /opt/render/project/src/backend/data
+      sizeGB: 1

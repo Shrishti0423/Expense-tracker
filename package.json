@@ -1,5 +1,5 @@
 {
-  "name": "spendwise-expense-tracker",
+  "name": "expense-tracker",
   "version": "1.0.0",
   "private": true,
   "description": "Full-stack expense tracker monorepo",

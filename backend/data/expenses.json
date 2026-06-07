@@ -1,0 +1,42 @@
+[
+  {
+    "id": "exp_1780682984792_eadw7yclq",
+    "amount": 950,
+    "category": "Entertainment",
+    "date": "2026-06-01",
+    "note": "netflix",
+    "createdAt": "2026-06-05T18:09:44.792Z"
+  },
+  {
+    "id": "exp_1780683020949_a1mbw4acj",
+    "amount": 600,
+    "category": "Food",
+    "date": "2026-06-02",
+    "note": "pizzaa with friends",
+    "createdAt": "2026-06-05T18:10:20.949Z"
+  },
+  {
+    "id": "exp_1780683094677_189x7m8ub",
+    "amount": 2000,
+    "category": "Other",
+    "date": "2026-06-04",
+    "note": "sent to friend",
+    "createdAt": "2026-06-05T18:11:34.677Z"
+  },
+  {
+    "id": "exp_1780683131741_ekj5o87je",
+    "amount": 499.98,
+    "category": "Transport",
+    "date": "2026-06-05",
+    "note": "rapido",
+    "createdAt": "2026-06-05T18:12:11.741Z"
+  },
+  {
+    "id": "exp_1780683425123_x6p1d2xue",
+    "amount": 780,
+    "category": "Food",
+    "date": "2026-06-02",
+    "note": "mcd",
+    "createdAt": "2026-06-05T18:17:05.123Z"
+  }
+]
